@@ -12,9 +12,10 @@ const { width } = Dimensions.get('window');
 
 interface MusicPlayerProps {
   visible: boolean;
+  onClose?: () => void;
 }
 
-export default function MusicPlayer({ visible }: MusicPlayerProps) {
+export default function MusicPlayer({ visible, onClose }: MusicPlayerProps) {
   const [playbackState, setPlaybackState] = useState<PlaybackState>(musicService.getPlaybackState());
 
   useEffect(() => {
@@ -52,6 +53,13 @@ export default function MusicPlayer({ visible }: MusicPlayerProps) {
 
   return (
     <View style={styles.container}>
+      {/* Close Button */}
+      {onClose && (
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.closeIcon}>✕</Text>
+        </TouchableOpacity>
+      )}
+      
       <View style={styles.trackInfo}>
         <View style={styles.defaultArtwork}>
           <Text style={styles.defaultArtworkText}>♪</Text>
@@ -234,5 +242,22 @@ const styles = StyleSheet.create({
   playIcon: {
     fontSize: 20,
     color: 'white',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  closeIcon: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
