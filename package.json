@@ -4,15 +4,32 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-community/blur": "^4.4.1",
+    "@react-native-voice/voice": "^3.2.4",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/stack": "^6.3.20",
+    "@types/three": "^0.178.1",
+    "axios": "^1.10.0",
     "expo": "~53.0.17",
+    "expo-av": "~15.1.7",
+    "expo-dev-client": "~5.2.4",
+    "expo-gl": "^15.1.7",
     "expo-status-bar": "~2.2.3",
+    "expo-three": "^8.0.0",
     "react": "19.0.0",
-    "react-native": "0.79.5"
+    "react-native": "0.79.5",
+    "react-native-gesture-handler": "~2.24.0",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "^4.11.1",
+    "react-native-web": "^0.20.0",
+    "three": "^0.166.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
