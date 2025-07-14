@@ -2,8 +2,11 @@ import { StyleSheet, View, TouchableOpacity, Text, TextInput, Alert } from 'reac
 import { useState, useEffect } from 'react';
 import VoiceAssistantOrb from '../VoiceAssistantOrb';
 import ProfileIcon from '../ProfileIcon';
+import MusicPlayer from '../music/MusicPlayer';
 import { claudeApi } from '../../services/claudeApi';
 import { voiceService } from '../../services/voiceService';
+import { commandProcessor } from '../../services/commandProcessor';
+import { musicService, PlaybackState } from '../../services/musicService';
 
 export default function HomeScreen() {
   const [isListening, setIsListening] = useState(false);
@@ -12,8 +15,13 @@ export default function HomeScreen() {
   const [inputText, setInputText] = useState('');
   const [response, setResponse] = useState('');
   const [partialSpeech, setPartialSpeech] = useState('');
+  const [playbackState, setPlaybackState] = useState<PlaybackState>(musicService.getPlaybackState());
+  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
 
   useEffect(() => {
+    // Subscribe to music service for playback state updates
+    const unsubscribeMusic = musicService.subscribe(setPlaybackState);
+    
     // Initialize voice service callbacks
     voiceService.setCallbacks({
       onSpeechStart: () => {
@@ -50,6 +58,7 @@ export default function HomeScreen() {
     });
 
     return () => {
+      unsubscribeMusic();
       voiceService.destroy();
     };
   }, []);
@@ -66,8 +75,23 @@ export default function HomeScreen() {
       
       const claudeResponse = await claudeApi.sendMessage(text);
       
+      // Parse response for music commands
+      const commandResult = commandProcessor.parseResponse(claudeResponse);
+      
       setIsProcessing(false);
-      setResponse(claudeResponse);
+      
+      // Execute music command if found
+      if (commandResult.hasCommand && commandResult.command) {
+        const success = await commandProcessor.executeCommand(commandResult.command);
+        if (success) {
+          setShowMusicPlayer(true); // Show player when music starts
+          setResponse(commandResult.displayText || 'Music command executed successfully!');
+        } else {
+          setResponse('Sorry, I couldn\'t find any music in that category. Try asking for motivational music!');
+        }
+      } else {
+        setResponse(commandResult.displayText);
+      }
       
       // Show response for 8 seconds then clear
       setTimeout(() => setResponse(''), 8000);
@@ -122,11 +146,27 @@ export default function HomeScreen() {
       
       const claudeResponse = await claudeApi.sendMessage(inputText);
       
+      // Parse response for music commands
+      const commandResult = commandProcessor.parseResponse(claudeResponse);
+      
       setIsProcessing(false);
-      setResponse(claudeResponse);
+      
+      // Execute music command if found
+      if (commandResult.hasCommand && commandResult.command) {
+        const success = await commandProcessor.executeCommand(commandResult.command);
+        if (success) {
+          setShowMusicPlayer(true); // Show player when music starts
+          setResponse(commandResult.displayText || 'Music command executed successfully!');
+        } else {
+          setResponse('Sorry, I couldn\'t find any music in that category. Try asking for motivational music!');
+        }
+      } else {
+        setResponse(commandResult.displayText);
+      }
+      
       setInputText('');
       
-      // Show response for 8 seconds then clear (longer for real responses)
+      // Show response for 8 seconds then clear
       setTimeout(() => setResponse(''), 8000);
       
     } catch (error) {
@@ -142,6 +182,10 @@ export default function HomeScreen() {
     setResponse('');
     setPartialSpeech('');
     Alert.alert('Conversation cleared', 'Chat history has been reset.');
+  };
+
+  const handleCloseMusicPlayer = () => {
+    setShowMusicPlayer(false);
   };
 
   return (
@@ -167,20 +211,11 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {/* Voice Recording Button */}
-      <TouchableOpacity 
-        style={[
-          styles.voiceButton, 
-          isRecording && styles.voiceButtonActive,
-          (isListening || isProcessing) && styles.voiceButtonDisabled
-        ]}
-        onPress={isRecording ? stopVoiceRecording : startVoiceRecording}
-        disabled={isListening || isProcessing}
-      >
-        <Text style={styles.voiceButtonText}>
-          {isRecording ? '🛑 Stop' : '🎤 Voice'}
-        </Text>
-      </TouchableOpacity>
+      {/* Music Player - Show when music is playing and not manually closed */}
+      <MusicPlayer 
+        visible={playbackState.currentTrack !== null && showMusicPlayer}
+        onClose={handleCloseMusicPlayer}
+      />
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -242,7 +277,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     position: 'absolute',
-    bottom: 140,
+    bottom: 40,
     left: 20,
     right: 20,
     flexDirection: 'row',
@@ -290,41 +325,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
-  },
-  voiceButton: {
-    position: 'absolute',
-    bottom: 220,
-    alignSelf: 'center',
-    backgroundColor: '#00aaff',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 32,
-    borderWidth: 2,
-    borderColor: '#00ccff',
-    shadowColor: '#00aaff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  voiceButtonActive: {
-    backgroundColor: '#ff0066',
-    borderColor: '#ff3388',
-    shadowColor: '#ff0066',
-    transform: [{ scale: 1.05 }],
-  },
-  voiceButtonDisabled: {
-    backgroundColor: 'rgba(102, 102, 102, 0.6)',
-    borderColor: 'rgba(136, 136, 136, 0.6)',
-    opacity: 0.5,
-    shadowOpacity: 0.2,
-  },
-  voiceButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '800',
-    textAlign: 'center',
-    letterSpacing: 0.5,
   },
   partialSpeechContainer: {
     position: 'absolute',

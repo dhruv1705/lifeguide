@@ -16,8 +16,8 @@ export interface Category {
 // 🎵 MUSIC LIBRARY - Add your tracks here
 export const musicLibrary: Category[] = [
   {
-    name: 'Meditation',
-    emoji: '🧘',
+    name: 'Motivational',
+    emoji: '💪',
     tracks: [
       {
         id: '1',
@@ -25,9 +25,16 @@ export const musicLibrary: Category[] = [
         artist: 'Motivational Speeches',
         url: 'https://storage.googleapis.com/lifesparkbucket/lifespark/motivational/THE%20MINDSET%20TO%20WIN%20-%20Best%20Motivational%20Video%20Speeches%20Compilation.mp3',
         duration: '45:30',
-        category: 'Meditation',
+        category: 'Motivational',
       },
-      // 👆 Add more meditation tracks here
+      // 👆 Add more motivational tracks here
+    ],
+  },
+  {
+    name: 'Meditation',
+    emoji: '🧘',
+    tracks: [
+      // 👆 Add meditation tracks here
     ],
   },
   {
